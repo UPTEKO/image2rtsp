@@ -31,8 +31,16 @@ Image2rtsp::Image2rtsp() : Node("image2rtsp"){
     local_only = this->get_parameter("local_only").as_bool();
     camera = this->get_parameter("camera").as_bool();
 
+    rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
+    auto qos_sensor_moded = rclcpp::QoS(
+        rclcpp::QoSInitialization(
+        qos_profile.history,
+        1//2
+        ),
+        qos_profile);
+
     // Start the subscription
-    subscription_ = this->create_subscription<sensor_msgs::msg::Image>(topic, 10, std::bind(&Image2rtsp::topic_callback, this, _1));
+    subscription_ = this->create_subscription<sensor_msgs::msg::Image>(topic, qos_sensor_moded, std::bind(&Image2rtsp::topic_callback, this, _1));
 
     // Start the RTSP server
     video_mainloop_start();
